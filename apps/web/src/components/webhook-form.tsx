@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import { api, HTTP_METHODS, type Company, type Webhook } from '@/lib/api';
+import { api, getUserFacingError, HTTP_METHODS, type Company, type Webhook } from '@/lib/api';
 import { cn, methodColor } from '@/lib/utils';
 
 function slugify(s: string) {
@@ -116,8 +116,8 @@ export function WebhookForm({
       mutate((key: any) => typeof key === 'string' && key.startsWith('/api/webhooks'));
       mutate('/api/companies');
       onSaved();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Save failed');
+    } catch (e: unknown) {
+      toast.error(getUserFacingError(e, 'Failed to save webhook'));
     } finally {
       setSaving(false);
     }

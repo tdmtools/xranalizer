@@ -41,6 +41,7 @@ import { getSocket } from '@/lib/socket';
 import {
   api,
   API_URL,
+  getUserFacingError,
   HTTP_METHODS,
   type RequestLog,
   type SearchResult,
@@ -175,8 +176,8 @@ export default function WebhookDetailPage({
       mutate('/api/companies');
       toast.success('All requests cleared');
       setConfirmingClear(false);
-    } catch (e: any) {
-      toast.error(e.message ?? 'Failed to clear');
+    } catch (e: unknown) {
+      toast.error(getUserFacingError(e, 'Failed to clear requests'));
     } finally {
       setClearing(false);
     }

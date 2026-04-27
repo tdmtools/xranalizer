@@ -25,7 +25,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { api, type Company } from '@/lib/api';
+import { api, getUserFacingError, type Company } from '@/lib/api';
 
 function slugify(s: string) {
   return s
@@ -112,8 +112,8 @@ function CompanyCard({ company, onEdit }: { company: Company; onEdit: () => void
       toast.success('Company deleted');
       mutate('/api/companies');
       setConfirming(false);
-    } catch (e: any) {
-      toast.error(e.message ?? 'Failed to delete');
+    } catch (e: unknown) {
+      toast.error(getUserFacingError(e, 'Failed to delete'));
     } finally {
       setDeleting(false);
     }
@@ -207,8 +207,8 @@ function CompanyForm({
         toast.success('Company created');
       }
       onSaved();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Save failed');
+    } catch (e: unknown) {
+      toast.error(getUserFacingError(e, 'Failed to save company'));
     } finally {
       setSaving(false);
     }

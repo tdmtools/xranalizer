@@ -9,9 +9,59 @@ export class ApiError extends Error {
   body: any;
   constructor(message: string, status: number, body?: any) {
     super(message);
+    this.name = 'ApiError';
     this.status = status;
     this.body = body;
   }
+}
+
+/**
+ * Unwraps Nest and common API error JSON into a string (never an object coerced to string).
+ */
+export function errorMessageFromApiBody(body: unknown): string | null {
+  if (body == null) return null;
+  if (typeof body === 'string' && body.trim()) return body.trim();
+  if (Array.isArray(body)) {
+    const parts = body
+      .map((x) => errorMessageFromApiBody(x))
+      .filter((s): s is string => Boolean(s));
+    return parts.length ? parts.join(' ') : null;
+  }
+  if (typeof body !== 'object') return null;
+  const o = body as Record<string, unknown>;
+
+  const asLine = (v: unknown): string | null => {
+    if (v == null) return null;
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (Array.isArray(v)) {
+      const p = v
+        .map((x) => (typeof x === 'string' && x.trim() ? x.trim() : errorMessageFromApiBody(x)))
+        .filter((s): s is string => Boolean(s));
+      return p.length ? p.join(' ') : null;
+    }
+    if (typeof v === 'object' && v !== null) return errorMessageFromApiBody(v);
+    return null;
+  };
+
+  return asLine(o.message) ?? asLine(o.error) ?? asLine((o as any).errors) ?? null;
+}
+
+/** For toast / UI when catching fetch or unknown errors. */
+export function getUserFacingError(
+  e: unknown,
+  fallback: string = 'Something went wrong',
+): string {
+  if (e instanceof ApiError) {
+    const m = (e.message && e.message !== '[object Object]') ? e.message : null;
+    if (m) return m;
+    return errorMessageFromApiBody(e.body) ?? fallback;
+  }
+  if (e instanceof Error) {
+    if (e.message) return e.message;
+    return fallback;
+  }
+  if (typeof e === 'string' && e.trim()) return e.trim();
+  return fallback;
 }
 
 async function request<T>(
@@ -29,14 +79,11 @@ async function request<T>(
   const text = await res.text();
   const body = text ? safeJson(text) : null;
   if (!res.ok) {
-    const msg =
-      (body && (body.message || body.error)) ||
-      `${res.status} ${res.statusText}`;
-    throw new ApiError(
-      Array.isArray(msg) ? msg.join(', ') : msg,
-      res.status,
-      body,
-    );
+    const fromJson =
+      errorMessageFromApiBody(body) ||
+      (typeof body === 'string' && body.trim() ? body.trim() : null);
+    const msg = fromJson || `${res.status} ${res.statusText}`.trim();
+    throw new ApiError(msg, res.status, body);
   }
   return body as T;
 }

@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { WebhookForm } from '@/components/webhook-form';
-import { api, API_URL, type Company, type Webhook } from '@/lib/api';
+import { api, API_URL, getUserFacingError, type Company, type Webhook } from '@/lib/api';
 import { cn, methodColor } from '@/lib/utils';
 
 export default function WebhooksPage() {
@@ -155,8 +155,8 @@ function WebhookCard({ webhook, onEdit }: { webhook: Webhook; onEdit: () => void
       mutate((key: any) => typeof key === 'string' && key.startsWith('/api/webhooks'));
       mutate('/api/companies');
       setConfirming(false);
-    } catch (e: any) {
-      toast.error(e.message ?? 'Delete failed');
+    } catch (e: unknown) {
+      toast.error(getUserFacingError(e, 'Failed to delete webhook'));
     } finally {
       setDeleting(false);
     }
