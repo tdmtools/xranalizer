@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Webhook request analyzer — capture, inspect and replay HTTP requests in real time",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
   "workspaces": [
     "apps/*"
   ],
@@ -13,8 +17,10 @@
     "build": "npm-run-all --parallel build:api build:web",
     "build:api": "npm run build --workspace=apps/api",
     "build:web": "npm run build --workspace=apps/web",
+    "start": "node apps/api/dist/main.js",
     "start:api": "npm run start:prod --workspace=apps/api",
-    "start:web": "npm run start --workspace=apps/web"
+    "start:web": "npm run start --workspace=apps/web",
+    "heroku-postbuild": "npm run build --workspace=apps/api"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5"

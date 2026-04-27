@@ -55,3 +55,7 @@ Each webhook can be configured with:
 - Custom response (status code, headers, body)
 
 Every incoming request is captured fully (method, URL, headers, query, body, IP, user-agent, timing) and broadcast over Socket.io to the frontend.
+
+## Deployment
+
+See [DEPLOY.md](./DEPLOY.md) — API on Heroku, web on Vercel, both from this repo.
