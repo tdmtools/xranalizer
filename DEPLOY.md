@@ -48,6 +48,7 @@ heroku stack:set heroku-24 -a xranalizer-api
 heroku config:set -a xranalizer-api \
   MONGO_URI="mongodb+srv://USER:PASS@cluster.mongodb.net/?retryWrites=true&w=majority" \
   DATA_BASE_NAME="xranalizer" \
+  CORS_ALLOW_ALL="false" \
   CORS_ORIGIN="https://xranalizer.vercel.app" \
   MAX_BODY_SIZE="10mb" \
   NPM_CONFIG_PRODUCTION="false"
@@ -55,7 +56,7 @@ heroku config:set -a xranalizer-api \
 
 > `NPM_CONFIG_PRODUCTION=false` keeps devDependencies during `npm install` so `nest build` is available. After `heroku-postbuild`, Heroku still prunes them.
 
-> Update `CORS_ORIGIN` once you know your Vercel domain. Multiple origins comma-separated: `https://a.com,https://b.com`.
+> CORS: set `CORS_ALLOW_ALL=false` and a comma‑separated `CORS_ORIGIN` with your Vercel origin(s), or `CORS_ALLOW_ALL=true` to allow any (only if you accept the risk on a public API). Legacy: `CORS_ORIGIN=*` still maps to “allow all” when `CORS_ALLOW_ALL` is unset.
 
 ### Deploy
 
@@ -70,7 +71,7 @@ Watch logs:
 heroku logs --tail -a xranalizer-api
 ```
 
-You should see `[XRAnalizer API] listening on http://0.0.0.0:<port>`.
+You should see CORS mode and `[XRAnalizer API] listening on http://0.0.0.0:<port>`.
 
 Test:
 
@@ -107,10 +108,10 @@ vercel env add NEXT_PUBLIC_SOCKET_URL production
 vercel --prod
 ```
 
-After first deploy, copy the production URL (e.g. `https://xranalizer.vercel.app`) and update Heroku's `CORS_ORIGIN`:
+After first deploy, copy the production URL (e.g. `https://xranalizer.vercel.app`) and, if the API is not in “allow all” mode, set the allowlist:
 
 ```bash
-heroku config:set -a xranalizer-api CORS_ORIGIN="https://xranalizer.vercel.app"
+heroku config:set -a xranalizer-api CORS_ALLOW_ALL=false CORS_ORIGIN="https://xranalizer.vercel.app"
 ```
 
 ---
@@ -137,7 +138,7 @@ curl -X POST https://xranalizer-api.herokuapp.com/mean-consultor/webhook1 \
 |---|---|
 | Heroku H10 "App crashed" at boot | Check `heroku logs --tail`. Most common: bad `MONGO_URI`, or whitelist missing in Atlas. |
 | `nest: not found` on Heroku | `NPM_CONFIG_PRODUCTION=false` not set. |
-| CORS error in browser | Set `CORS_ORIGIN` on Heroku to your Vercel URL exactly (no trailing slash). |
+| CORS error in browser | Use `CORS_ALLOW_ALL=false` and an exact (no trailing slash) `CORS_ORIGIN` allowlist, or `CORS_ALLOW_ALL=true` only if intended. |
 | Socket disconnects every minute | Heroku H15 idle timeout. Already handled by reconnection — no fix needed. |
 | Vercel build fails on shadcn imports | Make sure you used the root-level `vercel.json` and didn't set "Root Directory" to `apps/web`. |
 | `MongoServerSelectionError` on Heroku | Add `0.0.0.0/0` to Atlas Network Access. |

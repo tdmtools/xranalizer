@@ -9,9 +9,10 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { getCorsOriginValue } from '../config/cors-origins';
 
 @WebSocketGateway({
-  cors: { origin: true, credentials: true },
+  cors: { origin: getCorsOriginValue(), credentials: true },
   transports: ['websocket', 'polling'],
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {

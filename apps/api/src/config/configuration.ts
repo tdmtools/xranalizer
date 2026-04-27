@@ -3,7 +3,6 @@ export default () => ({
     // Heroku sets PORT — keep it first so deploys "just work".
     port: parseInt(process.env.PORT ?? process.env.API_PORT ?? '3001', 10),
     host: process.env.API_HOST ?? '0.0.0.0',
-    corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
     maxBodySize: process.env.MAX_BODY_SIZE ?? '10mb',
   },
   mongo: {

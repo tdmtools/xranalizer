@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { json, urlencoded, raw, text } from 'express';
 import type { Request } from 'express';
 import { AppModule } from './app.module';
+import { describeCorsMode, getCorsOriginValue } from './config/cors-origins';
 
 function rawBodySaver(req: Request, _res: any, buf: Buffer) {
   if (buf?.length) {
@@ -20,13 +21,14 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const port = config.get<number>('api.port') ?? 3001;
   const host = config.get<string>('api.host') ?? '0.0.0.0';
-  const corsOrigin = config.get<string>('api.corsOrigin') ?? '*';
   const maxBody = config.get<string>('api.maxBodySize') ?? '10mb';
 
   app.enableCors({
-    origin: corsOrigin === '*' ? true : corsOrigin.split(',').map((s) => s.trim()),
+    origin: getCorsOriginValue(),
     credentials: true,
   });
+  // eslint-disable-next-line no-console
+  console.log(`[XRAnalizer API] CORS: ${describeCorsMode()}`);
 
   app.use(json({ limit: maxBody, verify: rawBodySaver }));
   app.use(urlencoded({ extended: true, limit: maxBody, verify: rawBodySaver }));
