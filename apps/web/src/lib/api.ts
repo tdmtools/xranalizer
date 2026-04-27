@@ -1,8 +1,16 @@
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+/** Trailing slash + path starting with `/` would produce `//api/...` and 404 on some servers. */
+function withoutTrailingSlashes(s: string): string {
+  return s.replace(/\/+$/u, '') || s;
+}
 
-export const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL ?? API_URL;
+const envApi = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001').trim();
+const envSocket = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
+
+export const API_URL = withoutTrailingSlashes(envApi);
+
+export const SOCKET_URL = withoutTrailingSlashes(
+  envSocket && envSocket.length > 0 ? envSocket : envApi,
+);
 
 export class ApiError extends Error {
   status: number;
