@@ -7,7 +7,14 @@ export default () => ({
     maxBodySize: process.env.MAX_BODY_SIZE ?? '10mb',
   },
   mongo: {
-    uri: process.env.MONGO_URI ?? 'mongodb://localhost:27017/',
-    dbName: process.env.DATA_BASE_NAME ?? 'xranalizer',
+    // MONGODB_URI is a common name (e.g. Heroku Mongo add-on, tutorials); MONGO_URI matches this repo.
+    uri: (() => {
+      const a = process.env.MONGO_URI?.trim();
+      const b = process.env.MONGODB_URI?.trim();
+      if (a) return a;
+      if (b) return b;
+      return 'mongodb://localhost:27017/';
+    })(),
+    dbName: process.env.DATA_BASE_NAME?.trim() ?? 'xranalizer',
   },
 });
